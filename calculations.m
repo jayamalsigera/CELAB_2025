@@ -1,67 +1,73 @@
-% Define given parameters
-Ra = 2.6; % Armature resistance (Ohms)
-La = 180e-6; % Armature inductance (H)
-ke = 7.68e-3; % Electric (BEMF) constant (Vs/rad)
-kt = 7.68e-3; % Torque constant (Nm/A)
-Jm = 3.90e-7; % Rotor inertia (kg*m^2)
-N = 14; % Gearbox ratio
-J72 = 1.4e-6; % Moment of inertia of external gear (kg*m^2)
-Jd = 3.0e-5; % Moment of inertia of extra disc (kg*m^2)
-kdrv = 0.6; % Voltage driver static gain
-fc_drv = 1200; % Voltage driver cut-off frequency (Hz)
-Rs = 0.5; % Shunt resistance (Ohms)
-B_eq = 0; % Equivalent damping (given as 0)
-alpha = 4; % T_I / T_D ratio
-phi_m_deg = 58.6; % Phase margin in degrees
-phi_m = deg2rad(phi_m_deg); % Convert to radians
+%% System Constraints
+t_s_5percent = 0.15;                                                    % 5% Settling Time
+M_p = 0.1;                                                              % Overshoot
 
-% Equivalent parameters
-J_eq = Jm + (J72 + Jd) / N^2;
-R_eq = Ra + Rs;
+%% DC gear motor (plant) nominal parameters
+Ra = 2.6;                                                               % Armature resistance (Ohms)
+La = 180e-6;                                                            % Armature inductance (H)
+ke = 7.68e-3;                                                           % Electric (BEMF) constant (Vs/rad)
+kt = 7.68e-3;                                                           % Torque constant (Nm/A)
+Jm = 3.90e-7;                                                           % Rotor inertia (kg*m^2)
+N = 14;                                                                 % Gearbox ratio
+J72 = 1.4e-6;                                                           % Moment of inertia of external gear (kg*m^2)
+Jd = 3.0e-5;                                                            % Moment of inertia of extra disc (kg*m^2)
+kdrv = 0.6;                                                             % Voltage driver static gain
+fc_drv = 1200;                                                          % Voltage driver cut-off frequency (Hz)
+Rs = 0.5;                                                               % Shunt resistance (Ohms)
 
-% Compute k_m and T_m
-k_m = (kdrv * kt) / (R_eq * B_eq + kt * ke);
-T_m = (R_eq * J_eq) / (R_eq * B_eq + kt * ke);
+%% Initial Assumptions
+B_eq = 0;                                                               % Equivalent damping (given as 0)
+alpha = 4;                                                              % T_I / T_D ratio
+T_j0 = 1;                                                               % Assuming unity static gain
 
-% Compute gain crossover frequency (previously calculated)
-w_gc = 11.28;
+%% Equivalent Parameters
+J_eq = Jm + (J72 + Jd) / N^2;                                           % Equivalent inertia
+R_eq = Ra + Rs;                                                         % Equivalent resistance
 
-% Compute damping ratio
-Mp = 0.1;
-zeta = log(1/Mp) / sqrt(pi^2 + log(1/Mp)^2);
+%% Compute System Characteristics
+zeta = log(1/M_p) / sqrt(pi^2 + (log(1/M_p))^2);                        % Damping ratio from overshoot
+w_n = 3 / (zeta * t_s_5percent);                                        % Natural frequency (wn)
+w_gc = 1 / (zeta * t_s_5percent);                                       % Gain crossover frequency (w_gc)
+t_r = 1.8 / w_n;                                                        % Rise time (tr)
+t_s_1percent = 4.6 / (zeta * w_n);                                      % Settling time (1%) (ts_1percent)
+phi_m_rad = atan((2 * zeta) / sqrt(sqrt(1 + 4 * zeta^4) - 2 * zeta^2)); % Phase margin (phi_m) in radians
+phi_m_deg = rad2deg(phi_m_rad);                                         % Phase margin to degrees
+M_r = (M_p + 1) * T_j0;                                                 % Resonant peak (Mr)
+T_L = 1 / ((7/5) * w_gc);                                               % Filter time constant (T_L)
 
-% Compute natural frequency
-omega_n = 3 / (zeta * 0.15);
+%% Laplace Domain Calculations
+s = 1j * w_gc;                                                          % Define Laplace variable at gain crossover frequency
 
-% Compute rise time and settling times
-t_r = 1.8 / omega_n;
-t_s_1 = 4.6 / (zeta * omega_n);
+k_m = (kdrv * kt) / (R_eq * B_eq + kt * ke);                            % Gain k_m
+T_m = (R_eq * J_eq) / (R_eq * B_eq + kt * ke);                          % Constant T_m
+P_jwgc = (k_m / (s*T_m + 1)) * (1 / (N * s));                           % Plant response at gain crossover frequency
 
-% Compute filter cutoff frequency
-T_L = 1 / (7/5 * w_gc);
+%% Compute DeltaK and DeltaPhi
+DeltaK = 1 / abs(P_jwgc);                                               % Gain change
+DeltaPhi = -pi + phi_m_rad - angle(P_jwgc);                             % Phase shift
 
-% Compute P(jw_gc)
-s = 1j * w_gc;
-P_jwgc = (k_m / (s*T_m + 1)) * (1 / (N * s));
+%% Compute PID gains
+K_P = DeltaK * cos(DeltaPhi);                                           % Proportional gain
+T_D = (tan(DeltaPhi) + sqrt(tan(DeltaPhi)^2 + 4/alpha)) / (2*w_gc);     % Derivative time
+T_I = alpha * T_D;                                                      % Integral time
+K_D = K_P * T_D;                                                        % Derivative gain
+K_I = K_P / T_I;                                                        % Integral gain
 
-% Compute DeltaK and DeltaPhi
-DeltaK = 1 / abs(P_jwgc);
-DeltaPhi = -pi + phi_m - angle(P_jwgc);
-
-% Compute PID gains
-K_P = DeltaK * cos(DeltaPhi);
-T_D = (tan(DeltaPhi) + sqrt(tan(DeltaPhi)^2 + 4/alpha)) / (2*w_gc);
-T_I = alpha * T_D;
-K_D = K_P * T_D;
-K_I = K_P / T_I;
-
-% Display results
-fprintf('Damping Ratio (zeta) = %.4f\n', zeta);
-fprintf('Natural Frequency (omega_n) = %.4f rad/s\n', omega_n);
-fprintf('Gain Crossover Frequency (omega_gc) = %.4f rad/s\n', w_gc);
-fprintf('Rise Time (t_r) = %.4f s\n', t_r);
-fprintf('Settling Time 1%% (t_s_1) = %.4f s\n', t_s_1);
-fprintf('Filter Time Constant (T_L) = %.4f s\n', T_L);
+%% Display results
+fprintf('Computed System Parameters:\n');
+fprintf('--------------------------------------\n');
+fprintf('Damping Ratio (zeta): %.4f\n', zeta);
+fprintf('Natural Frequency (wn): %.4f rad/s\n', w_n);
+fprintf('Gain Crossover Frequency (w_gc): %.4f rad/s\n', w_gc);
+fprintf('Rise Time (tr): %.4f s\n', t_r);
+fprintf('Settling Time (5%%) (ts_5): %.4f s\n', t_s_5percent);
+fprintf('Settling Time (1%%) (ts_1): %.4f s\n', t_s_1percent);
+fprintf('Phase Margin (phi_m): %.4f degrees\n', phi_m);
+fprintf('Resonant Peak (Mr): %.4f\n', M_r);
+fprintf('Filter Time Constant (T_L): %.4f s\n', T_L);
+fprintf('--------------------------------------\n');
+fprintf('Computed Controller Gains:\n');
+fprintf('--------------------------------------\n');
 fprintf('K_P = %.4f\n', K_P);
 fprintf('K_D = %.4f\n', K_D);
 fprintf('K_I = %.4f\n', K_I);
