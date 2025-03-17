@@ -17,7 +17,7 @@ Rs = 0.5;                                                               % Shunt 
 
 %% Initial Assumptions
 B_eq = 0;                                                               % Equivalent damping (given as 0)
-alpha = 4;                                                              % T_I / T_D ratio
+alpha = 150;                                                              % T_I / T_D ratio
 T_j0 = 1;                                                               % Assuming unity static gain
 
 %% Equivalent Parameters
@@ -36,14 +36,14 @@ M_r = (M_p + 1) * T_j0;                                                 % Resona
 T_L = 1 / ((2/5) * w_gc);                                               % Filter time constant (T_L)
 
 %% Laplace Domain Calculations
-s = 1j * w_gc;                                                          % Define Laplace variable at gain crossover frequency
+sx = 1j * w_gc;                                                          % Define Laplace variable at gain crossover frequency
 
 k_m = (kdrv * kt) / (R_eq * B_eq + kt * ke);                            % Gain k_m
 T_m = (R_eq * J_eq) / (R_eq * B_eq + kt * ke);                          % Constant T_m
-P_jwgc = (k_m / (s*T_m + 1)) * (1 / (N * s));                           % Plant response at gain crossover frequency
+P_jwgc = (k_m / (sx*T_m + 1)) * (1 / (N * sx));                           % Plant response at gain crossover frequency
 
 %% Compute DeltaK and DeltaPhi
-DeltaK = 1 / abs(P_jwgc);                                               % Gain change
+DeltaK = 1 / abs(P_jwgc);                                                                                                  % Gain change
 DeltaPhi = -pi + phi_m_rad - angle(P_jwgc);                             % Phase shift
 
 %% Compute PID gains
