@@ -17,7 +17,7 @@ Rs = 0.5;                                                               % Shunt 
 
 %% Initial Assumptions
 B_eq = 0;                                                               % Equivalent damping (given as 0)
-alpha = 150;                                                              % T_I / T_D ratio
+alpha = 4;                                                              % T_I / T_D ratio
 T_j0 = 1;                                                               % Assuming unity static gain
 
 %% Equivalent Parameters
