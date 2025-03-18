@@ -39,13 +39,15 @@ P_jwgc = (k_m / (s * T_m + 1)) * (1 / (gbox.N * s));        % Plant transfer fun
 DeltaK = 1/abs(P_jwgc);                     % Gain change
 DeltaPhi = -pi + phi_m_rad - angle(P_jwgc);   % Phase shift
 
-%% Compute PID gains
+%% Compute PID gains for w
 K_P = DeltaK * cos(DeltaPhi);                           % Proportional gain
 T_D = (tan(DeltaPhi) + sqrt((tan(DeltaPhi))^2 ...
 	+ (4/alpha))) / (2*w_gc);							% Derivative time
 T_I = alpha * T_D;                                      % Integral time
 K_D = K_P * T_D;                                        % Derivative gain
 K_I = K_P / T_I;                                        % Integral gain
+
+
 
 %% Display results
 fprintf('Computed System Parameters:\n');
