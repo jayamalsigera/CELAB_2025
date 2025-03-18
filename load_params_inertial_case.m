@@ -1,3 +1,7 @@
+%% Q2 Assumptions
+t_sf_model = 1.0e-2;                % Static Friction Coefficient
+B_eq_model = 2.0e-6;                % Equivalent Friction Coefficient
+
 %% General Parameters and Conversion Gains
 
 % Conversion gains
@@ -39,9 +43,9 @@ gbox.J72 = 1.4e-6;           % Inertia of a single external 72-tooth gear [kg*m^
 gbox.eta2 = 1;               % External transmission efficiency (n.a.)
 
 % Overall gearbox data
-gbox.N = gbox.N1 * gbox.N2;  % Total reduction ratio
-gbox.eta = gbox.eta1 * gbox.eta2; % Total efficiency
-gbox.J = 3 * gbox.J72;       % Total inertia at gearbox output [kg*m^2]
+gbox.N = gbox.N1 * gbox.N2;         % Total reduction ratio
+gbox.eta = gbox.eta1 * gbox.eta2;   % Total efficiency
+gbox.J = 3 * gbox.J72;              % Total inertia at gearbox output [kg*m^2]
 
 %% Mechanical Load Nominal Parameters
 
@@ -72,9 +76,6 @@ drv.Tc = drv.C1 * drv.R1 * drv.R2 / (drv.R1 + drv.R2);
 
 %% Sensors Data
 
-% Shunt resistor
-sens.curr.Rs = 0.5;                                         % Shunt resistor [Ohm]
-
 % Hewlett-Packard HEDS-5540#A06 optical encoder
 sens.enc.ppr = 500*4;                                       % Pulses per rotation
 sens.enc.pulse2deg = 360/sens.enc.ppr;                      % [pulses] → [deg]
@@ -97,19 +98,18 @@ sens.pot1.V2rad = 1/sens.pot1.rad2V;                        % Conversion gain [V
 % NI PCI-6221 DAC data
 daq.dac.bits = 16;                                  % Resolution (bits)
 daq.dac.fs = 10;                                    % Full-scale voltage [V]
+%%%%%%%%%%%%%%%%%%%
 daq.dac.q = 2*daq.dac.fs/(2^daq.dac.bits - 1);      % Quantization step [V]
+%%%%%%%%%%%%%%%%%%%
 
 % NI PCI-6221 ADC data
 daq.adc.bits = 16;                                  % Resolution (bits)
 daq.adc.fs = 10;                                    % Full-scale voltage [V] (SLDRT Analog Input)
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%
 daq.adc.q = 2*daq.adc.fs/(2^daq.adc.bits - 1);      % Quantization step [V]
 %%%%%%%%%%%%%%%%%%%
-%% Equivalent Parameters
 
-R_eq_model = mot.Ra + mot.Rs;                       % Equivalent Resistance (Shunt Resistance + Armature Resistance)
-J_eq_model = mot.J + mld.J/gbox.N^2;                % Equivalent Moment of Inertia
+%% Encoder Quantization
+enc.q_all = 360/(500*4);      % Quantization for all except MOTORE 8 and MOTORE 10
+enc.q_8_10 = 360/(1024*4);    % Quantization for MOTORE 8 and MOTORE 10* 
 
-q_en_1 = 360/(500*4);               % Quantization for all except MOTORE 8 and MOTORE 10
-q_en_2 = 360/(1024*4);              % Quantization for MOTORE 8 and MOTORE 10
-q_dac = 20/(2^16 - 1);              % Quantization for DAC
