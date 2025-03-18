@@ -20,7 +20,7 @@ zeta = log(1/M_p) / sqrt(pi^2 + (log(1/M_p))^2);    % Damping ratio from oversho
 w_n = 3 / (zeta * t_s_5percent);                    % Natural frequency (wn)
 w_gc = 3 / (zeta * t_s_5percent);                   % Gain crossover frequency (w_gc)
 t_r = 1.8 / w_gc;                                   % Rise time (tr)
-t_s_1percent = 4.6 / (zeta * w_gc);                 % Settling time (1%) (ts_1percent)
+t_s_1percent = 4.6 / (zeta * w_gc);                  % Settling time (1%) (ts_1percent)
 phi_m_rad = atan((2 * zeta) / ...
     sqrt(sqrt(1 + 4 * zeta^4) - 2 * zeta^2));       % Phase margin (phi_m) in radians
 phi_m_deg = rad2deg*phi_m_rad;                      % Phase margin to degrees
