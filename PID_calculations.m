@@ -12,6 +12,7 @@ alpha = 15; % >=4       % T_I / T_D ratio
 %T_j0 = ??;             % Assuming unity static gain
 
 %% Equivalent Parameters
+
 J_eq = mot.J + (3*gbox.J72 + mld.J) / gbox.N^2;     % Equivalent inertia
 R_eq = mot.Ra + mot.Rs;                             % Equivalent resistance
 
@@ -46,6 +47,38 @@ T_D = (tan(DeltaPhi) + sqrt((tan(DeltaPhi))^2 ...
 T_I = alpha * T_D;                                      % Integral time
 K_D = K_P * T_D;                                        % Derivative gain
 K_I = K_P / T_I;                                        % Integral gain
+
+J_eq = Jm + (3*J72 + Jd) / N^2;                                           % Equivalent inertia
+R_eq = Ra + Rs;                                                         % Equivalent resistance
+
+%% Compute System Characteristics
+zeta = log(1/M_p) / sqrt(pi^2 + (log(1/M_p))^2);                        % Damping ratio from overshoot
+w_n = 3 / (zeta * t_s_5percent);                                        % Natural frequency (wn)
+w_gc = 3 / (zeta * t_s_5percent);                                       % Gain crossover frequency (w_gc)
+t_r = 1.8 / w_gc;                                                        % Rise time (tr)
+t_s_1percent = 4.6 / (zeta * w_gc);                                      % Settling time (1%) (ts_1percent)
+phi_m_rad = atan((2 * zeta) / sqrt(sqrt(1 + 4 * zeta^4) - 2 * zeta^2)); % Phase margin (phi_m) in radians
+phi_m_deg = rad2deg*phi_m_rad;                                         % Phase margin to degrees
+M_r = (M_p + 1) * T_j0;                                                 % Resonant peak (Mr)
+T_L = 1 / ((2/5) * w_gc);                                               % Filter time constant (T_L)
+
+%% Laplace Domain Calculations
+sx = 1j * w_gc;                                                          % Define Laplace variable at gain crossover frequency
+
+k_m = (kdrv * kt) / (R_eq * B_eq + kt * ke);                            % Gain k_m
+T_m = (R_eq * J_eq) / (R_eq * B_eq + kt * ke);                          % Constant T_m
+P_jwgc = (k_m / (sx*T_m + 1)) * (1 / (N * sx));                           % Plant response at gain crossover frequency
+
+%% Compute DeltaK and DeltaPhi
+DeltaK = 1 / abs(P_jwgc);                                                                                                  % Gain change
+DeltaPhi = -pi + phi_m_rad - angle(P_jwgc);                             % Phase shift
+
+%% Compute PID gains
+K_P = DeltaK * cos(DeltaPhi);                                           % Proportional gain
+T_D = (tan(DeltaPhi) + sqrt((tan(DeltaPhi))^2 + (4/alpha))) / (2*w_gc); % Derivative time
+T_I = alpha * T_D;                                                      % Integral time
+K_D = K_P * T_D;                                                        % Derivative gain
+K_I = K_P / T_I;                                                        % Integral gain
 
 %% Display results
 fprintf('Computed System Parameters:\n');
