@@ -21,6 +21,10 @@ T_L_w = 5 * w_gc_w;											% Filter time constant (T_L)  {2-5 mot.Range}
 w_c = 2 * pi * 20;			% Cutoff frequency in rad/s
 delta_c = 1 / sqrt(2);		% Damping factor for Butterworth filter
 
+%% Define Low-Pass Filter Parameters
+w_c_i = 2 * pi * 20;			% Cutoff frequency in rad/s
+delta_i = 1 / sqrt(2);		% Damping factor for Low-Pass filter
+
 %% Laplace Domain Calculations
 
 % Define motor parameters
