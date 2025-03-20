@@ -47,7 +47,13 @@ T_I = alpha * T_D;                                      % Integral time
 K_D = K_P * T_D;                                        % Derivative gain
 K_I = K_P / T_I;                                        % Integral gain
 
+%% Define Low-Pass Filter Parameters
+w_ci = 2 * pi * 20; % Cutoff frequency in rad/s
+delta_i = 1 / sqrt(2); % Damping coefficient
 
+%% Define NButterworth Filter Parameters
+w_c = 2 * pi * 20; % Cutoff frequency in rad/s
+delta_c = 1 / sqrt(2); % Damping factor
 
 %% Display results
 fprintf('Computed System Parameters:\n');
