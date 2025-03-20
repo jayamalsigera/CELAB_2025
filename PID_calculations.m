@@ -47,7 +47,13 @@ T_I = alpha * T_D;                                      % Integral time
 K_D = K_P * T_D;                                        % Derivative gain
 K_I = K_P / T_I;                                        % Integral gain
 
+%% Define Butterworth High-Pass Filter Parameters
+w_c = 2 * pi * 20;			% Cutoff frequency in rad/s
+delta_c = 1 / sqrt(2);		% Damping factor for Butterworth filter
 
+%% Define Low-Pass Filter Parameters
+w_c_i = 2 * pi * 20;			% Cutoff frequency in rad/s
+delta_i = 1 / sqrt(2);		% Damping factor for Low-Pass filter
 
 %% Display results
 fprintf('Computed System Parameters:\n');
@@ -67,3 +73,5 @@ fprintf('--------------------------------------\n');
 fprintf('K_P = %.6f\n', K_P);
 fprintf('K_D = %.6f\n', K_D);
 fprintf('K_I = %.6f\n', K_I);
+fprintf('--------------------------------------\n');
+fprintf('J_eq (from given data) = %.4e [Nm]\n', J_eq);

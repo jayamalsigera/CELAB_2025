@@ -9,6 +9,6 @@ J_eq = (mean(filtered_tau_wdot_plus(:,2)) - mean(filtered_tau_wdot_minus(:,2))) 
 
 %% Display Results
 fprintf('-----------------------------------\n');
-%% Print Best-Fit Line Parameters
+% Print Best-Fit Line Parameters
 fprintf('J_eq = %.4e [Nm]\n', J_eq);
 fprintf('-----------------------------------\n');
