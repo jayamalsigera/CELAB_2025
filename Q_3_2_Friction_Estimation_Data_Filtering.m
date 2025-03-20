@@ -1,13 +1,17 @@
 %% Load Data
+
+load('positive_speed.mat');
+load('negative_speed.mat');
+
 % Positive dataset (Speed, Torque, Time)
-w_m_plus = positive.Data(:,1); 
-tau_m_plus = positive.Data(:,2);
-time_plus = positive.Time; 
+w_m_plus = positive_speed.Data(:,1); 
+tau_m_plus = positive_speed.Data(:,2);
+time_plus = positive_speed.Time; 
 
 % Negative dataset (Speed, Torque, Time)
-w_m_minus = negative.Data(:,1); 
-tau_m_minus = negative.Data(:,2);
-time_minus = negative.Time; 
+w_m_minus = negative_speed.Data(:,1); 
+tau_m_minus = negative_speed.Data(:,2);
+time_minus = negative_speed.Time; 
 
 % Define step intervals
 T_step = 5; % Periodic step time

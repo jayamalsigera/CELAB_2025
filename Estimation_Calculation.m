@@ -1,0 +1,8 @@
+load_params_inertial_case;
+PID_calculations;
+
+Q_3_2_Friction_Estimation_Data_Filtering
+Q_3_2_Friction_Estimation_Calculation
+
+Q_3_3_Inertia_Estimation_Data_Filtering;
+Q_3_3_Inertia_Estimation_Calculation;
