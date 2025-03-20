@@ -50,5 +50,9 @@ J_eq_n = J_eq_n(~isnan(J_eq_n));
 J_eq_calc = mean(J_eq_n);
 
 % Display result
+fprintf('------------------------------------------------\n');
+disp('Equivalent Inertia Parameters');
+fprintf('------------------------------------------------\n');
 disp(['Equivalent Inertia (J_eq_calculated): ', num2str(J_eq_calc)]);
 disp(['Equivalent Inertia (J_eq_given): ', num2str(J_eq)]);
+fprintf('------------------------------------------------\n');

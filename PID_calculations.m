@@ -56,9 +56,10 @@ w_c = 2 * pi * 20; % Cutoff frequency in rad/s
 delta_c = 1 / sqrt(2); % Damping factor
 
 %% Display results
+fprintf('------------------------------------------------\n');
 fprintf('Computed System Parameters:\n');
-fprintf('--------------------------------------\n');
-fprintf('Damping mot.Ratio (zeta): %.6f\n', zeta);
+fprintf('------------------------------------------------\n');
+fprintf('Damping Ratio (zeta): %.6f\n', zeta);
 fprintf('Natural Frequency (w_n): %.6f rad/s\n', w_n);
 fprintf('Gain Crossover Frequency (w_gc): %.6f rad/s\n', w_gc);
 fprintf('Rise Time (tr): %.6f s\n', t_r);
@@ -67,9 +68,10 @@ fprintf('Settling Time (1%%) (t_s_1percent): %.6f s\n', t_s_1percent);
 fprintf('Phase Margin (phi_m): %.6f degrees\n', phi_m_deg);
 %fprintf('Resonant Peak (M_r): %.6f\n', M_r);
 fprintf('Filter Time Constant (T_L): %.6f s\n', T_L);
-fprintf('--------------------------------------\n');
+fprintf('------------------------------------------------\n');
 fprintf('Computed Controller Gains:\n');
-fprintf('--------------------------------------\n');
+fprintf('------------------------------------------------\n');
 fprintf('K_P = %.6f\n', K_P);
 fprintf('K_D = %.6f\n', K_D);
 fprintf('K_I = %.6f\n', K_I);
+fprintf('------------------------------------------------\n');

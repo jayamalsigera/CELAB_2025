@@ -46,18 +46,20 @@ B_eq = (B_eq_plus + B_eq_minus) / 2;
 tau_sf = (abs(tau_sf_plus) + abs(tau_sf_minus)) / 2;
 
 %% Display Results
-fprintf('-----------------------------------\n');
+fprintf('------------------------------------------------\n');
 %% Print Best-Fit Line Parameters
-fprintf('\nBest-Fit Line Parameters:\n');
+fprintf('Best-Fit Line Parameters:\n');
+fprintf('------------------------------------------------\n');
 fprintf('B_eq_plus   = %.4e [Nm/(rad/s)]\n', B_eq_plus);
 fprintf('tau_sf_plus = %.4e [Nm]\n', tau_sf_plus);
 fprintf('B_eq_minus  = %.4e [Nm/(rad/s)]\n', B_eq_minus);
 fprintf('tau_sf_minus = %.4e [Nm]\n', tau_sf_minus);
-fprintf('-----------------------------------\n');
+fprintf('------------------------------------------------\n');
 fprintf('Estimated Friction Parameters:\n');
+fprintf('------------------------------------------------\n');
 fprintf('B_eq   = %.4e [Nm/(rad/s)]\n', B_eq);
 fprintf('tau_sf = %.4e [Nm]\n', tau_sf);
-fprintf('-----------------------------------\n');
+fprintf('------------------------------------------------\n');
 
 
 %% Confidence Interval Calculation
@@ -77,11 +79,12 @@ confidence_level = 1.96; % For 95% confidence
 B_eq_CI = confidence_level * sqrt(cov_theta(1,1));
 tau_sf_CI = confidence_level * sqrt(cov_theta(2,2));
 
-fprintf('-----------------------------------\n');
-fprintf('\nConfidence Intervals (95%%):\n');
+fprintf('------------------------------------------------\n');
+fprintf('Confidence Intervals (95%%):\n');
+fprintf('------------------------------------------------\n');
 fprintf('B_eq   ∈ [%.4e, %.4e] [Nm/(rad/s)]\n', B_eq - B_eq_CI, B_eq + B_eq_CI);
 fprintf('tau_sf ∈ [%.4e, %.4e] [Nm]\n', tau_sf - tau_sf_CI, tau_sf + tau_sf_CI);
-fprintf('-----------------------------------\n');
+fprintf('------------------------------------------------\n');
 
 %% Create Figure
 figure;
