@@ -1,4 +1,5 @@
 %% Load Filtered Acceleration Data
+% load data to workspace
 load('filtered_acceleration.mat');
 
 % Extract acceleration, speed, and torque

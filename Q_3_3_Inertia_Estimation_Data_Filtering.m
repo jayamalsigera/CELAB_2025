@@ -1,4 +1,5 @@
 %% Load Data
+% Data from Simulink
 load('acceleration.mat');
 
 % Acceleration dataset (Acceleration, Speed, Torque, Time)

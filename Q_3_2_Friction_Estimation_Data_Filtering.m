@@ -1,5 +1,5 @@
 %% Load Data
-
+% Data from Simulink
 load('positive_speed.mat');
 load('negative_speed.mat');
 
