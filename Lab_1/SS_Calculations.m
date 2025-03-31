@@ -39,17 +39,17 @@ imag_part = wn * sqrt(1 - delta^2);		% imaginary part of desired closed-loop pol
 poles = [real_part + 1i * imag_part, 
 	real_part - 1i * imag_part];		% complex-conjugate pair of poles
 
-K = place(A, B, poles);	% State feedback gain
+K0 = place(A, B, poles);	% State feedback gain
 
 M = [A, B; C, D];		% Block Matrix for Reference Tracking (3x3 Matrix)
 
 rhs = [0; 0; 1];        % Right-hand side
 sol = M \ rhs;          % Solve the system
 
-Nx = sol(1:2);          % Steady-state state vector
-Nu = sol(3);            % Steady-state input
+Nx0 = sol(1:2);          % Steady-state state vector
+Nu0 = sol(3);            % Steady-state input
 
-Nr = Nu + K * Nx;		% Feedforward gain Nr
+Nr0 = Nu0 + K0 * Nx0;		% Feedforward gain Nr
 
 %% Print Results
 fprintf('-------------------------------------------------\n');
@@ -61,11 +61,11 @@ fprintf('λ2 = %.4f - %.4fj\n', real_part, imag_part);
 fprintf('\n--- Augmented Matrix M = [A B; C 0] ---\n');
 disp(M);
 fprintf('\n--- State Feedback Gains ---\n');
-fprintf('K = [%.6e; %.6e]\n', K(1), K(2));
+fprintf('K = [%.6e; %.6e]\n', K0(1), K0(2));
 fprintf('\n--- State Feedforward Gains ---\n');
-fprintf('Nx = [%.6e; %.6e]\n', Nx(1), Nx(2));
-fprintf('Nu = %.6e\n', Nu);
-fprintf('Nr = %.6e\n', Nr);
+fprintf('Nx = [%.6e; %.6e]\n', Nx0(1), Nx0(2));
+fprintf('Nu = %.6e\n', Nu0);
+fprintf('Nr = %.6e\n', Nr0);
 fprintf('-------------------------------------------------\n');
 
 %% Robust tracking design with integral action
@@ -108,11 +108,12 @@ for i = 1:4
         % Solve reference tracking
         sol = M \ rhs;
         Nx = sol(1:2);
+		Nx_aug = [0; Nx];
         Nu = sol(3);
         Nr = Nu + Kx * Nx;
 
         % Store tracking gains
-        assignin('base', sprintf('Nx%d', i), Nx);
+        assignin('base', sprintf('Nx%d', i), Nx_aug);
         assignin('base', sprintf('Nu%d', i), Nu);
         assignin('base', sprintf('Nr%d', i), Nr);
 
@@ -120,7 +121,7 @@ for i = 1:4
         fprintf('\n--- Option %d ---\n', i);
         fprintf('Ke%d = [%.4f %.4f %.4f]\n', i, KI, K1, K2);
         fprintf('KI%d = %.4f\n', i, KI);
-		fprintf('Nx%d = [%.4f; %.4f]\n', i, Nx(1), Nx(2));
+		fprintf('Nx%d = [%.4f; %.4f; %.4f]\n', i, Nx_aug(1), Nx_aug(2), Nx_aug(3) );
         fprintf('Nu%d = %.4f\n', i, Nu);
         fprintf('Nr%d = %.4f\n', i, Nr);
 
