@@ -1,3 +1,5 @@
+load_params_inertial_case;
+
 %% System Constraints
 t_s_5percent = 0.14;    % 5% Settling Time
 M_p = 0.1;              % Overshoot
@@ -22,12 +24,12 @@ B_eq = 6.6699e-7;		% Estimated Equivalent Friction
 
 %% State-Space Matrices
 
-A = [ 0, 1; 0, - (R_eq*B_eq + mot.Kt*mot.Ke)/(R_eq*J_eq)];	% A matrix (System Matrix)
+A = [ 0, 1; 0, -(R_eq*B_eq + mot.Kt*mot.Ke)/(R_eq*J_eq)];	% A matrix (System Matrix)
 B = [ 0; (kdrv * mot.Kt)/(gbox.N * R_eq * J_eq)];			% B matrix (Input Matrix)
 C = [1, 0];													% C matrix (Output Matrix)
 D = 0;														% D matrix (Feedthrough/Direct Transmission Matrix)
 
-%% Calculations Desired Poles
+%%  Nominal tracking design
 
 delta = log(1/M_p) / sqrt(pi^2 + log(1/M_p)^2);	% damping ratio from overshoot spec
 wn = 3 / (delta * t_s_5percent);				% natural frequency from settling time spec
@@ -51,20 +53,78 @@ Nr = Nu + K * Nx;		% Feedforward gain Nr
 
 %% Print Results
 fprintf('-------------------------------------------------\n');
-fprintf('--- Desired Poles ---\n');
+fprintf('---Nominal Tracking Design---\n');
 fprintf('-------------------------------------------------\n');
+fprintf('--- Desired Poles ---\n');
 fprintf('λ1 = %.4f + %.4fj\n', real_part, imag_part); 
 fprintf('λ2 = %.4f - %.4fj\n', real_part, imag_part);
-fprintf('-------------------------------------------------\n');
-fprintf('-------------------------------------------------\n');
-fprintf('--- Augmented Matrix M = [A B; C 0] ---\n');
-fprintf('-------------------------------------------------\n');
+fprintf('\n--- Augmented Matrix M = [A B; C 0] ---\n');
 disp(M);
-fprintf('-------------------------------------------------\n');
-fprintf('-------------------------------------------------\n');
-fprintf('--- Steady-State Feedforward Gains ---\n');
-fprintf('-------------------------------------------------\n');
+fprintf('\n--- State Feedback Gains ---\n');
+fprintf('K = [%.6e; %.6e]\n', K(1), K(2));
+fprintf('\n--- State Feedforward Gains ---\n');
 fprintf('Nx = [%.6e; %.6e]\n', Nx(1), Nx(2));
 fprintf('Nu = %.6e\n', Nu);
 fprintf('Nr = %.6e\n', Nr);
 fprintf('-------------------------------------------------\n');
+
+%% Robust tracking design with integral action
+
+Ae = [0, C; zeros(size(A,1),1), A];     % 3x3 matrix
+Be = [0; B];							% 3x1 input matrix
+
+% Place poles and extract gains
+fprintf('\n\n-------------------------------------------------\n');
+fprintf('---  Robust tracking design with integral action ---\n');
+fprintf('-------------------------------------------------\n');
+
+% Define pole sets
+p1 = [real_part + 1i*imag_part, real_part - 1i*imag_part, real_part];
+p2 = [real_part, real_part, real_part];
+p3 = [2*real_part + 1i*imag_part, 2*real_part - 1i*imag_part, 2*real_part];
+p4 = [2*real_part + 1i*imag_part, 2*real_part - 1i*imag_part, 3*real_part];
+
+pole_sets = {p1, p2, p3, p4};
+
+% Loop over all pole sets
+for i = 1:4
+    try
+        % Place poles for augmented system
+        poles = pole_sets{i};
+        Ke = place(Ae, Be, poles);
+
+        % Extract gains
+        KI = Ke(1); 
+        Kx = Ke(2:3); 
+        K1 = Kx(1);
+        K2 = Kx(2);
+
+        % Store gains in workspace with unique names
+        assignin('base', sprintf('Ke%d', i), Ke);
+        assignin('base', sprintf('KI%d', i), KI);
+        assignin('base', sprintf('K1_%d', i), K1);
+        assignin('base', sprintf('K2_%d', i), K2);
+
+        % Solve reference tracking
+        sol = M \ rhs;
+        Nx = sol(1:2);
+        Nu = sol(3);
+        Nr = Nu + Kx * Nx;
+
+        % Store tracking gains
+        assignin('base', sprintf('Nx%d', i), Nx);
+        assignin('base', sprintf('Nu%d', i), Nu);
+        assignin('base', sprintf('Nr%d', i), Nr);
+
+        % Print results
+        fprintf('\n--- Option %d ---\n', i);
+        fprintf('Ke%d = [%.4f %.4f %.4f]\n', i, KI, K1, K2);
+        fprintf('KI%d = %.4f\n', i, KI);
+		fprintf('Nx%d = [%.4f; %.4f]\n', i, Nx(1), Nx(2));
+        fprintf('Nu%d = %.4f\n', i, Nu);
+        fprintf('Nr%d = %.4f\n', i, Nr);
+
+    catch ME
+        fprintf('\n---Option %d--- Skipped — %s\n', i, ME.message);
+    end
+end
