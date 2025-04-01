@@ -1,7 +1,7 @@
 load_params_inertial_case;
 
 %% System Constraints
-t_s_5percent = 0.14;    % 5% Settling Time
+t_s_5percent = 0.15;    % 5% Settling Time
 M_p = 0.1;              % Overshoot
 
 
@@ -39,17 +39,17 @@ imag_part = wn * sqrt(1 - delta^2);		% imaginary part of desired closed-loop pol
 poles = [real_part + 1i * imag_part, 
 	real_part - 1i * imag_part];		% complex-conjugate pair of poles
 
-K0 = place(A, B, poles);	% State feedback gain
+K = place(A, B, poles);	% State feedback gain
 
 M = [A, B; C, D];		% Block Matrix for Reference Tracking (3x3 Matrix)
 
 rhs = [0; 0; 1];        % Right-hand side
 sol = M \ rhs;          % Solve the system
 
-Nx0 = sol(1:2);          % Steady-state state vector
-Nu0 = sol(3);            % Steady-state input
+Nx = sol(1:2);          % Steady-state state vector
+Nu = sol(3);            % Steady-state input
 
-Nr0 = Nu0 + K0 * Nx0;		% Feedforward gain Nr
+Nr = Nu + K * Nx;		% Feedforward gain Nr
 
 %% Print Results
 fprintf('-------------------------------------------------\n');
@@ -61,71 +61,63 @@ fprintf('λ2 = %.4f - %.4fj\n', real_part, imag_part);
 fprintf('\n--- Augmented Matrix M = [A B; C 0] ---\n');
 disp(M);
 fprintf('\n--- State Feedback Gains ---\n');
-fprintf('K = [%.6e; %.6e]\n', K0(1), K0(2));
+fprintf('K = [%.6e; %.6e]\n', K(1), K(2));
 fprintf('\n--- State Feedforward Gains ---\n');
-fprintf('Nx = [%.6e; %.6e]\n', Nx0(1), Nx0(2));
-fprintf('Nu = %.6e\n', Nu0);
-fprintf('Nr = %.6e\n', Nr0);
+fprintf('Nx = [%.6e; %.6e]\n', Nx(1), Nx(2));
+fprintf('Nu = %.6e\n', Nu);
+fprintf('Nr = %.6e\n', Nr);
 fprintf('-------------------------------------------------\n');
 
 %% Robust tracking design with integral action
 
 Ae = [0, C; zeros(size(A,1),1), A];     % 3x3 matrix
 Be = [0; B];							% 3x1 input matrix
+Ce = [0, C];							% 1x3 output matrix
 
 % Place poles and extract gains
 fprintf('\n\n-------------------------------------------------\n');
 fprintf('---  Robust tracking design with integral action ---\n');
 fprintf('-------------------------------------------------\n');
 
-% Define pole sets
-p1 = [real_part + 1i*imag_part, real_part - 1i*imag_part, real_part];
-p2 = [real_part, real_part, real_part];
-p3 = [2*real_part + 1i*imag_part, 2*real_part - 1i*imag_part, 2*real_part];
-p4 = [2*real_part + 1i*imag_part, 2*real_part - 1i*imag_part, 3*real_part];
+% Choose your desired pole set (e.g., p3)
+poles = [2.5*real_part, 2*real_part, 0.05*real_part];
 
-pole_sets = {p1, p2, p3, p4};
+try
+    % Place poles for augmented system
+    Ke = place(Ae, Be, poles);
 
-% Loop over all pole sets
-for i = 1:4
-    try
-        % Place poles for augmented system
-        poles = pole_sets{i};
-        Ke = place(Ae, Be, poles);
+    % Extract gains
+    KIe = Ke(1); 
+    Kxe = Ke(2:3); 
+    K1e = Kxe(1);
+    K2e = Kxe(2);
 
-        % Extract gains
-        KI = Ke(1); 
-        Kx = Ke(2:3); 
-        K1 = Kx(1);
-        K2 = Kx(2);
+    % Solve reference tracking equations
+    sole = M \ rhs;
+    Nxe = sol(1:2);
+    Nxe_aug = [0; Nxe];               % Pad Nx to match augmented state
+    Nue = sol(3);
+    Nre = Nue + Kxe * Nxe;
 
-        % Store gains in workspace with unique names
-        assignin('base', sprintf('Ke%d', i), Ke);
-        assignin('base', sprintf('KI%d', i), KI);
-        assignin('base', sprintf('K1_%d', i), K1);
-        assignin('base', sprintf('K2_%d', i), K2);
+    % Store results in base workspace (optional)
+    assignin('base', 'Ke', Ke);
+    assignin('base', 'KI', KIe);
+    assignin('base', 'K1', K1e);
+    assignin('base', 'K2', K2e);
+    assignin('base', 'Nx', Nxe_aug);
+    assignin('base', 'Nu', Nue);
+    assignin('base', 'Nr', Nre);
 
-        % Solve reference tracking
-        sol = M \ rhs;
-        Nx = sol(1:2);
-		Nx_aug = [0; Nx];
-        Nu = sol(3);
-        Nr = Nu + Kx * Nx;
+    % Print results
+    fprintf('\n--- Selected Pole Placement ---\n');
+    fprintf('Ke = [%.4f %.4f %.4f]\n', KIe, K1e, K2e);
+    fprintf('KI = %.4f\n', KI);
+    fprintf('Nx = [%.4f; %.4f; %.4f]\n', Nxe_aug(1), Nxe_aug(2), Nxe_aug(3));
+    fprintf('Nu = %.4f\n', Nue);
+    fprintf('Nr = %.4f\n', Nre);
 
-        % Store tracking gains
-        assignin('base', sprintf('Nx%d', i), Nx_aug);
-        assignin('base', sprintf('Nu%d', i), Nu);
-        assignin('base', sprintf('Nr%d', i), Nr);
-
-        % Print results
-        fprintf('\n--- Option %d ---\n', i);
-        fprintf('Ke%d = [%.4f %.4f %.4f]\n', i, KI, K1, K2);
-        fprintf('KI%d = %.4f\n', i, KI);
-		fprintf('Nx%d = [%.4f; %.4f; %.4f]\n', i, Nx_aug(1), Nx_aug(2), Nx_aug(3) );
-        fprintf('Nu%d = %.4f\n', i, Nu);
-        fprintf('Nr%d = %.4f\n', i, Nr);
-
-    catch ME
-        fprintf('\n---Option %d--- Skipped — %s\n', i, ME.message);
-    end
+catch ME
+    fprintf('\n--- Computation Skipped --- %s\n', ME.message);
 end
+
+Acl = Ae - Be * Ke;						% 3x3 closed-loop matrix
