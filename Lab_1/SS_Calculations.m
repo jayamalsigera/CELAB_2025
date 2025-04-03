@@ -236,14 +236,6 @@ fprintf('===========================================================');
 
 %% Q_2_2_SSC_Robust_Tracking_with_Extended_State_Estimator (FOR SINUSIOID)
 
-% 
-% row1_s = [0, 1, 0, zeros(1, n)];
-% row2_s = [-fliplr(alpha_z(2:end)), zeros(1, n)];
-% row3_s = [B, zeros(n, 1), A];
-% 
-% As = [row1_s;
-%        row2_s;
-%        row3_s];
 
 %Az Calculation (Equation 67: Lab 1 Handout)
 %Top-left block
@@ -270,17 +262,24 @@ disp(['Number of rows in Bs: ', num2str(Bs_num_rows)]);
 
 Cs = [zeros(1, m), C];
 
-lambda_e1 = 2 * wn * exp(1j * (-pi + pi/3));
+lambda_e1 = 15 * wn * exp(1j * (-pi + 0.1*pi/3));
 lambda_e2 = conj(lambda_e1);
 
-lambda_e3 = 2 * wn * exp(1j * (-pi + pi/6));
+lambda_e3 = 15* wn * exp(1j * (-pi + 0.01*pi/4));
 lambda_e4 = conj(lambda_e3);
 
-lambda_e5 = -2 * wn;
+lambda_e5 = -15 * wn;
 
 poles_ee = [lambda_e1, lambda_e2, lambda_e3, lambda_e4, lambda_e5];
 
 Ls = place(As', Cs', poles_ee)';
+
+beta1e = real_part + 1i * imag_part;
+beta2e = conj(beta1e);
+poles_ce = [beta1e, 
+		beta2e];		% complex-conjugate pair of poles
+
+Kce = place(A, B, poles_ce);
 
 fprintf('===========================================================\n');
 fprintf('--- Extended Estimator Model (Sinusoid) ---\n');
