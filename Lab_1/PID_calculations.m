@@ -13,14 +13,12 @@ alpha = 4; % >=4       % T_I / T_D ratio
 
 %% Equivalent Parameters
 % J_eq = mot.J + (3*gbox.J72 + mld.J) / gbox.N^2;     % Equivalent inertia
-% R_eq = mot.Ra + mot.Rs;                             % Equivalent resistance
+R_eq = mot.Ra + mot.Rs;                             % Equivalent resistance
 
 %% Estimated Parameters from Lab_0
 J_eq = 6.0087e-7;		% Estimated Equivalent Inertia
 B_eq = 6.6699e-7;		% Estimated Equivalent Friction
 tau_sf = 7.4967e-3;		% Estimated Friction Gain
-
-
 
 %% Compute System Characteristics
 zeta = log(1/M_p) / sqrt(pi^2 + (log(1/M_p))^2);    % Damping ratio from overshoot
@@ -63,7 +61,7 @@ w_c = 2 * pi * 20; % Cutoff frequency in rad/s
 delta_c = 1 / sqrt(2); % Damping factor
 
 %% Anti-Windup Calculations
-T_W = t_s_5percent / 5;
+T_W = t_s_5percent / 208;
 K_W = 1 / T_W;
 
 %% Display results
