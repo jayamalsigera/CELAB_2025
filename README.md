@@ -2,3 +2,4 @@
 Control Engineering Laboratary Module, University of Padova - 2025 <br>
 Laboratary 0 - Position PID–control of a DC servomotor <br>
 Laboratory 1 - Position state–space control of a DC servomotor <br>
+Laboratory 2 - Digital position control of a DC servomotor
