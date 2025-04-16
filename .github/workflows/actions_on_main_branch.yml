@@ -1,0 +1,25 @@
+name: actions_on_main_branch
+
+on: 
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:    
+      - 'main'
+
+jobs:
+  job1:
+    name: check_jayamalsigera
+    runs-on: ubuntu-latest
+    env:
+      ALLOWED_USER: jayamalsigera
+    steps:
+      - name: Block if not jayamalsigera
+        if: ${{ github.actor != env.ALLOWED_USER }}
+        run: exit 1
+
+      - name: Allow if jayamalsigera
+        if: ${{ github.actor == env.ALLOWED_USER }}
+        run: echo "Access granted to ${{ env.ALLOWED_USER }}"
