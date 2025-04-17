@@ -29,16 +29,28 @@ C_z_backward = K_P + K_I / s_backward + K_D * (s_backward / (T_DL * s_backward +
 [numCd_backwardE, denCd_backwardE] = tfdata(C_z_backward, 'v');
 
 % Display results
-disp('Tustin-discretized controller C(z):');
+
+fprintf('===========================================================\n');
+fprintf('PID Discretization\n');
+fprintf('===========================================================\n');
+fprintf('-----------------------------------------------------------\n');
+fprintf('Tustin-discretized controller C(z):\n');
+fprintf('-----------------------------------------------------------\n');
 C_z_tustin
 
-disp('ZOH-discretized controller C(z):');
+fprintf('-----------------------------------------------------------\n');
+fprintf('ZOH-discretized controller C(z):\n');
+fprintf('-----------------------------------------------------------\n');
 C_z_zoh
 
-disp('Forward Euler-discretized controller C(z):');
+fprintf('-----------------------------------------------------------\n');
+fprintf('Forward Euler-discretized controller C(z):\n');
+fprintf('-----------------------------------------------------------\n');
 C_z_forward
 
-disp('Backward Euler-discretized controller C(z):');
+fprintf('-----------------------------------------------------------\n');
+fprintf('Backward Euler-discretized controller C(z):\n');
+fprintf('-----------------------------------------------------------\n');
 C_z_backward
 
 % Plot pole-zero map for Tustin method

@@ -1,0 +1,54 @@
+%% System Constraints
+t_s_5percent = 0.14;    % 5% Settling Time
+M_p = 0.1;              % Overshoot
+
+%% DC gear motor (plant) nominal parameters
+kdrv = drv.dcgain;             % Voltage driver static gain
+fc_drv = 1200;          % Voltage driver cut-off frequency (Hz)
+
+%% Initial Assumptions
+%B_eq = 0;               % Equivalent damping (given as 0)
+alpha = 4; % >=4       % T_I / T_D ratio
+%T_j0 = ??;             % Assuming unity static gain
+
+%% Equivalent Parameters
+% J_eq = mot.J + (3*gbox.J72 + mld.J) / gbox.N^2;     % Equivalent inertia
+R_eq = mot.Ra + mot.Rs;                             % Equivalent resistance
+
+%% Estimated Parameters from Lab_0
+J_eq = 6.0087e-7;		% Estimated Equivalent Inertia
+B_eq = 6.6699e-7;		% Estimated Equivalent Friction
+tau_sf = 7.4967e-3;		% Estimated Friction Gain
+
+%% Compute System Characteristics
+zeta = log(1/M_p) / sqrt(pi^2 + (log(1/M_p))^2);    % Damping ratio from overshoot
+w_n = 3 / (zeta * t_s_5percent);                    % Natural frequency (wn)
+w_gc = 3 / (zeta * t_s_5percent);                   % Gain crossover frequency (w_gc)
+t_r = 1.8 / w_gc;                                   % Rise time (tr)
+t_s_1percent = 4.6 / (zeta * w_gc);                 % Settling time (1%) (ts_1percent)
+phi_m_rad = atan((2 * zeta) / ...
+    sqrt(sqrt(1 + 4 * zeta^4) - 2 * zeta^2));       % Phase margin (phi_m) in radians
+phi_m_deg = rad2deg*phi_m_rad;                      % Phase margin to degrees
+%M_r = (M_p + 1) * T_j0;                            % Resonant peak (Mr)
+T_L = 1/(5 * w_gc);										% Filter time constant (T_L)  {2-5 mot.Range}
+
+%% Laplace Domain Calculations
+
+k_m = (kdrv * mot.Kt) / (R_eq * B_eq + mot.Kt * mot.Ke);    % Gain k_m
+T_m = (R_eq * J_eq) / (R_eq * B_eq + mot.Kt * mot.Ke);      % Constant T_m
+
+s = 1i * w_gc;                                              % Define Laplace variable s
+P_jwgc = (k_m / (s * T_m + 1)) * (1 / (gbox.N * s));        % Plant transfer function at gain crossover frequency
+
+%% Define Low-Pass Filter Parameters
+w_ci = 2 * pi * 20; % Cutoff frequency in rad/s
+delta_i = 1 / sqrt(2); % Damping coefficient
+
+%% Define NButterworth Filter Parameters
+w_c = 2 * pi * 20; % Cutoff frequency in rad/s
+delta_c = 1 / sqrt(2); % Damping factor
+
+%% Anti-Windup Calculations
+% T_W = t_s_5percent / 208; % Challenge 1
+T_W = t_s_5percent / 10; % Lab 2
+K_W = 1 / T_W;
